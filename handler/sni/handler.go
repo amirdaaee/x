@@ -94,11 +94,12 @@ func (h *sniHandler) Handle(ctx context.Context, conn net.Conn, opts ...handler.
 		if err != nil {
 			ro.Err = err.Error()
 		}
-		ro.Duration = time.Since(start)
+		if err := ro.AddTrafficField(conn); err != nil {
+			log.Errorf("error adding traffic field: %s", err)
+		}
 		if err := ro.Record(ctx, h.recorder.Recorder); err != nil {
 			log.Errorf("record: %v", err)
 		}
-
 		log.WithFields(map[string]any{
 			"duration": time.Since(start),
 		}).Infof("%s >< %s", conn.RemoteAddr(), conn.LocalAddr())
